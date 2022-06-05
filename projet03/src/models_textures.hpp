@@ -16,6 +16,7 @@ cgp::mesh vis_with_texture(float r, float h);
 cgp::mesh disc_broker(float r1);
 cgp::mesh create_mesh_rail(float largeur, float epaisseur, cgp::vec3 position);
 cgp::mesh create_bois(float largeur, float epaisseur, cgp::vec3 position);
+cgp::mesh trouPourPoisson(float r1, float r2, float h);
 
 
 cgp::mesh torus_with_texture();

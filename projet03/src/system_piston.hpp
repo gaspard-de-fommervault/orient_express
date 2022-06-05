@@ -3,6 +3,10 @@
 
 #include "cgp/cgp.hpp"
 #include "models_textures.hpp"
+#include "interpolation.hpp"
+
+
+
 
 
 //struct gui_parameters {
@@ -53,6 +57,8 @@ struct piston{
 	void avancer(float vitesse);
 	void translationPiston(cgp::vec3 p);
 	void update(cgp::vec3 const& p, environmentType& environment, float hauteur);
+	cgp::buffer<float> acceleration(float accelerationAvant, float vitesse, float vitesseMax, float dt, cgp::mesh& terrain, cgp::vec3 position, chemin chemin1, float distance, float tMin, float tMax, float degX, float degZ);
+
 
 
 };

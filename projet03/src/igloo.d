@@ -1,4 +1,4 @@
-src//scene.o: src//scene.cpp src/scene.hpp \
+src//igloo.o: src//igloo.cpp src/igloo.hpp \
   ../../../../library/cgp/cgp.hpp ../../../../library/cgp/base/base.hpp \
   ../../../../library/cgp/base/error/error.hpp \
   ../../../../library/cgp/base/basic_types/basic_types.hpp \
@@ -135,10 +135,9 @@ src//scene.o: src//scene.cpp src/scene.hpp \
   ../../../../library/cgp/helper_common_scene/helper_common_scene.hpp \
   ../../../../library/cgp/helper_common_scene/helper/helper.hpp \
   ../../../../library/cgp/helper_common_scene/scene_environment_basic/scene_environment_basic.hpp \
-  src/system_piston.hpp src/models_textures.hpp src/interpolation.hpp \
-  src/terrain2.hpp src/flocon.hpp src/igloo.hpp
+  src/models_textures.hpp
 
-src/scene.hpp:
+src/igloo.hpp:
 
 ../../../../library/cgp/cgp.hpp:
 
@@ -414,14 +413,4 @@ src/scene.hpp:
 
 ../../../../library/cgp/helper_common_scene/scene_environment_basic/scene_environment_basic.hpp:
 
-src/system_piston.hpp:
-
 src/models_textures.hpp:
-
-src/interpolation.hpp:
-
-src/terrain2.hpp:
-
-src/flocon.hpp:
-
-src/igloo.hpp:

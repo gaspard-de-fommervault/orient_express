@@ -137,7 +137,7 @@ void piston::initialize(){
 
 	std::cout<< hierarchy["train"].transform.rotation <<std::endl;
 	hierarchy["train"].transform.rotation = rotation_transform::from_axis_angle({ 0,0,1 }, -Pi /2);
-	hierarchy["train"].transform.scaling = 0.005f;
+	// hierarchy["train"].transform.scaling = 0.005f;
 
 }
 
@@ -179,37 +179,98 @@ void piston::translationPiston(cgp::vec3 p){
 	return;
 }
 
-void piston::update(cgp::vec3 const& p, environmentType& environment)
+void piston::update(cgp::vec3 const& p, environmentType& environment, float hauteur)
 {
 	// Display the interpolated position
-	this->hierarchy["train"].transform.translation = p;
+	this->hierarchy["train"].transform.translation = p+vec3{0,0,hauteur};
 
 }
-/*
-void piston::acceleration(float accelerationAvant, float vitesse, float vitesseMax, float dt, terrain, position, chemin chemin1){
+
+cgp::buffer<float> piston::acceleration(float accelerationAvant, float vitesse, float vitesseMax, float dt, cgp::mesh& terrain, cgp::vec3 position, chemin chemin1, float distance, float tMin, float tMax, float degX, float degZ){
 	float acceleration;
-	if (vitesse<vitesseMax){
-		acceleration = accelerationAvant + vitesse*dt;
+	float coef = 1.0f;
+	float seuil = 0.0f;
+	float hauteur = 0.55f;
+	float vitesseMin = 0.01f;
+	float accelerationMin = -2.0f;
+	float accelerationMax = 2.0f;
+
+	acceleration = accelerationAvant + vitesse*dt/8;
+	if (acceleration<accelerationMin){
+		acceleration = accelerationMin;
 	}
-	else {
-		acceleration = 0;
+	else if (acceleration>accelerationMax){
+		acceleration = accelerationMax;
+	}
+	vitesse = vitesse + acceleration*dt;
+
+	if (vitesse<vitesseMin) {
+		vitesse = vitesseMin;
+	}
+	else if (vitesse>vitesseMax){
 		vitesse = vitesseMax;
 	}
 
-	float dt=dt+vitesse*dt;
-	vec3 p = interpolation(t, chemin1.key_positions, chemin1.key_times, terrain);
-	this->hierarchy["train"].transform.translation = p;
-	rotation du train en fonction de l interpolation
-
-	calculer pente
-
-	else if {pente monte}{
-		acceleration = acceleration - coefdePente;
+	distance=distance+vitesse*dt;   //ça me semble faux ça, enfin dt toi etre tres petit
+	if (distance>tMax-0.2f){
+		return this->acceleration(0.1f,0.1f,vitesseMax,0.1f,terrain,interpolation(tMin+0.01f, chemin1.key_positions, chemin1.key_times, terrain), chemin1, tMin+0.01f, tMin,tMax,0,0);
 	}
-	else if pente monte PASS
-		acceleration = 0;
+	vec3 p = interpolation(distance+0.1f, chemin1.key_positions, chemin1.key_times, terrain);
+	this->hierarchy["train"].transform.translation = p+vec3{0,0,hauteur};
+	//rotation du train en fonction de l interpolation
+	vec3 pente = p - position;
+	//	float degreX = std::atan(pente[1]/pente[0]);
+	
+	vec3 rot = rotationTrain(distance+0.1f, chemin1.key_positions2, chemin1.key_times, terrain);
+	vec3 rot2 = rotationTrain(distance+0.1f, chemin1.key_positions3, chemin1.key_times, terrain);
 
-	vec2 mouvement = {acceleration, vitesse};
+	// Si on est pas trop proche de l'initialisation on controle les ecarts entre les degres 
+	// pas trop proche = mesure par un taux
+	float tauxZ = 0.05;
+	float tauxX = 1.15;
+	float degreZ = rot2[1]/7;
+	float degreX = rot[2];
+	degreZ = -std::atan(pente[2]/pente[0]);
+
+
+	if(distance>tMin+0.2f){
+		if(degreX*degX<0 && std::abs(degreX)>0.2){
+			degreX=-degreX;
+		}
+		if(degreZ*degZ<0 && std::abs(degreZ)>0.2){
+			degreZ=-degreZ;
+		}
+		/*
+		if(degreX>(1+tauxX)*degX){
+			degreX=degX*(1+tauxX);
+		}
+		if(degreX<(1-tauxX)*degX){
+			degreX=degX*(1-tauxX);
+		}
+		*/
+		if (degZ !=0){
+			if(degreZ>(1+tauxZ)*degZ){
+				degreZ=degZ*(1+tauxZ);
+			}
+			if(degreZ<(1-tauxZ)*degZ){
+				degreZ=degZ*(1-tauxZ);
+			}
+		} 
+
+		
+	}
+
+	//std::cout<< rot[2] <<std::endl;	
+	this->hierarchy["train"].transform.rotation = rotation_transform::from_axis_angle({ 1,0,0 }, 0*degreZ)*rotation_transform::from_axis_angle({ 0,0,1 }, degreX+Pi);
+			
+	// quand ça descend c est positif
+	acceleration = acceleration*(1+degreZ);
+
+
+	cgp::buffer<float> mouvement = {acceleration, vitesse, distance,degreX,degreZ};
+	std::cout<< mouvement <<std::endl;
+
+	return mouvement;
 }
-*/
+
 

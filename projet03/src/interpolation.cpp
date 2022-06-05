@@ -127,6 +127,7 @@ vec3 linear_interpolation(float t, float t1, float t2, vec3 const& p1, vec3 cons
 /** Compute the cardinal spline interpolation p(t) with the polygon [p0,p1,p2,p3] at time [t0,t1,t2,t3]
 *  - Assume t \in [t1,t2] */
 vec3 cardinal_spline_interpolation(float t, float t0, float t1, float t2, float t3, vec3 const& p0, vec3 const& p1, vec3 const& p2, vec3 const& p3, float K, cgp::mesh& terrain);
+vec3 rot_cardinal_spline_interpolation(float t, float t0, float t1, float t2, float t3, vec3 const& p0, vec3 const& p1, vec3 const& p2, vec3 const& p3, float K, cgp::mesh& terrain);
 
 /** Find the index k such that intervals[k] < t < intervals[k+1] 
 * - Assume intervals is a sorted array of N time values
@@ -158,6 +159,31 @@ vec3 interpolation(float t, buffer<vec3> const& key_positions, buffer<float> con
     return p;
 }
 
+vec3 rotationTrain(float t, buffer<vec3> const& key_positions, buffer<float> const& key_times,cgp::mesh& terrain)
+{
+    // Find idx such that key_times[idx] < t < key_times[idx+1]
+    int idx = find_index_of_interval(t, key_times);
+
+    // Get parameters (time and position) used to compute the linear interpolation
+    //   (You will need to get more parameters for the spline interpolation)
+    float t0 = key_times[idx-1]; // = t_{i-1}
+    float t1 = key_times[idx  ]; // = t_i
+    float t2 = key_times[idx+1]; // = t_{i+1}
+    float t3 = key_times[idx+2]; // = t_{i+2}
+
+    vec3 const& p0 = key_positions[idx-1]; // = p_{i-1}
+    vec3 const& p1 = key_positions[idx  ]; // = p_i
+    vec3 const& p2 = key_positions[idx+1]; // = p_{i+1}
+    vec3 const& p3 = key_positions[idx+2]; // = p_{i+1}
+	
+    // Call the interpolation
+	// vec3 p = linear_interpolation(t, t1,t2, p1,p2);
+    float K = 0.5f;
+    vec3 rot = rot_cardinal_spline_interpolation(t, t0, t1, t2, t3, p0, p1, p2, p3, K,terrain);
+    return rot;
+}
+
+
 /** Compute linear interpolation
  * 
       t: current time
@@ -186,17 +212,44 @@ vec3 cardinal_spline_interpolation(float t, float t0, float t1, float t2, float 
 {
     // To do: fill the function to compute p(t) as a cardinal spline interpolation
     //vec3 const p = {0,0,0};
-
+    float hauteurGlace =100;
     float s  = (t - t1) / (t2 - t1);
     vec3 d1 = 2*K*(p2 - p0) / (t2 - t0);
     vec3 d2 = 2*K*(p3 - p1) / (t3 - t1);
 
     vec3 p = (2*s*s*s - 3*s*s + 1)*p1 + (s*s*s - 2*s*s + s)*d1 + (-2*s*s*s + 3*s*s)*p2 + (s*s*s - s*s)*d2;
-
-    vec3 h = {p[0],p[1],evaluate_terrain_height(p[0],p[1],terrain)};
-    return h;
+    if (p[2]<hauteurGlace){
+        p[2]=hauteurGlace;
+    }
+    //vec3 h = {p[0],p[1],evaluate_terrain_height(p[0],p[1],terrain)};
+    return p;
     // idee : t ne represente plus le temps total mais la proportion de segment realisee t=0.5 indique qu'on est a la moitie par exemple
 
+}
+
+
+vec3 rot_cardinal_spline_interpolation(float t, float t0, float t1, float t2, float t3, vec3 const& p0, vec3 const& p1, vec3 const& p2, vec3 const& p3, float K, cgp::mesh& terrain)
+{
+    // To do: fill the function to compute p(t) as a cardinal spline interpolation
+    //vec3 const p = {0,0,0};
+
+    float s  = (t - t1) / (t2 - t1);
+    vec3 d1 = 2*K*(p2 - p0) / (t2 - t0);
+    vec3 d2 = 2*K*(p3 - p1) / (t3 - t1);
+
+    vec3 derivee1 = (6*s*s - 6*s)*p1 + (3*s*s - 4*s +1)*d1 + (-6*s*s+6*s)*p2 + (3*s*s-2*s)*d2;
+    vec3 p = (2*s*s*s - 3*s*s + 1)*p1 + (s*s*s - 2*s*s + s)*d1 + (-2*s*s*s + 3*s*s)*p2 + (s*s*s - s*s)*d2;
+    float s2  = (t2 - t1) / (t2 - t1);
+
+    vec3 pente = derivee1*(s2-s);
+
+    float degreZ = std::atan(pente[2]/pente[0]);
+    float degreX = std::atan(pente[1]/pente[0]);
+
+
+
+    vec3 deg = {0,degreZ,degreX};
+    return deg;
 }
 
 int find_index_of_interval(float t, buffer<float> const& intervals)

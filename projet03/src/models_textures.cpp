@@ -296,9 +296,7 @@ mesh cylinder_with_hole(float r1, float r2, float h)
     cylindre.push_back(disc);
 
     return cylindre;
-
-
-		
+	
 
 }
 
@@ -485,3 +483,42 @@ mesh create_bois(float largeur, float epaisseur, cgp::vec3 position){
     rail1.position += position;
     return rail1;
 }
+
+mesh trouPourPoisson(float r1, float r2, float h)
+{
+    //r1>r2
+	mesh disc;
+    int N = 50;
+
+	for (int k = 0; k < N; ++k)
+	{
+		float u = k/(N-1.0f);
+		vec3 p = r1 * vec3(std::cos(2* Pi *u), std::sin(2* Pi *u), 0.0f);
+		disc.position.push_back(p);
+        disc.uv.push_back({0.5f + std::cos(2* Pi *u)/2, 0.5f + std::sin(2* Pi *u)/2});
+		vec3 p2 = r2 * vec3(std::cos(2* Pi *u), std::sin(2* Pi *u), h);
+        disc.position.push_back(p2);
+        disc.uv.push_back({0.5f + std::cos(2* Pi *u)/2*r2/r1, 0.5f + std::sin(2* Pi *u)/2*r2/r1});
+
+
+
+	}
+	// middle point
+    //disc.uv.push_back({0.5f ,0.5f});
+    
+
+	for (int k = 0; k < N-1; ++k){
+		disc.connectivity.push_back( uint3{ 2*k, 2*k+1, 2*k+2});
+        disc.connectivity.push_back( uint3{ 2*k+2, 2*k+1, 2*k+3});
+    }
+
+	disc.connectivity.push_back( uint3{ 2*N-2, 2*N-1, 1});
+    disc.connectivity.push_back( uint3{ 1, 2*N-1, 2});
+
+	disc.fill_empty_field();
+    mesh cyl = cylinder_with_texture(r2,h);
+    disc.push_back(cyl);
+    return disc;
+}
+
+

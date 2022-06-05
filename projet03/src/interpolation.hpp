@@ -8,9 +8,12 @@
 
 // Compute the interpolated position p(t) given a time t and the set of key_positions and key_frame
 cgp::vec3 interpolation(float t, cgp::buffer<cgp::vec3> const& key_positions, cgp::buffer<float> const& key_times, cgp::mesh& terrain);
+cgp::vec3 rotationTrain(float t, cgp::buffer<cgp::vec3> const& key_positions, cgp::buffer<float> const& key_times, cgp::mesh& terrain);
 
 struct chemin{
     cgp::buffer<cgp::vec3> key_positions;
+    cgp::buffer<cgp::vec3> key_positions2;
+    cgp::buffer<cgp::vec3> key_positions3;
     cgp::buffer<float> key_times;
     cgp::mesh_drawable rail;
     cgp::mesh mesh_rail;
@@ -22,6 +25,7 @@ struct chemin{
     cgp::mesh_drawable boisRail;
     cgp::mesh_drawable acierRail;
     cgp::mesh_drawable structurePortante;
+
 
 
 
